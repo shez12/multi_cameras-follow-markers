@@ -1,0 +1,12 @@
+{
+    "198": {
+        "aruco_dict": "4x4_250",
+        "marker_id": 198,
+        "marker_size": 0.02
+    },
+    "0": {
+        "aruco_dict": "6x6_250",
+        "marker_id": 0,
+        "marker_size": 0.1
+    }
+}
