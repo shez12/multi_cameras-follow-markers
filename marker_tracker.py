@@ -2,7 +2,6 @@ import cv2
 import numpy as np
 import json
 from spatialmath import SE3
-import numpy as np
 from threading import Thread, Lock
 import time
 from queue import Queue
@@ -72,7 +71,6 @@ class PositionMap:
         
         if marker_pose is None:
             # 如果marker_pose为None，则将该marker_id的位置设置为None
-            # self.position_map[marker_id] = None
             self.temp_map[marker_id].append(None)
             return
 
@@ -86,15 +84,14 @@ class PositionMap:
             return
 
         self.temp_map[marker_id].append(filtered_pose)
-        # print(f"Updated position for marker {marker_id}:")
-        # print(filtered_pose)
-
+        
     def combine_temp_map(self,marker_id):
         if len(self.temp_map[marker_id]) != self.camera_num:
             return
         # 去除None
         self.temp_map[marker_id] = [pose for pose in self.temp_map[marker_id] if pose is not None]
         if len(self.temp_map[marker_id]) == 0:
+            # 如果temp_map中没有数据，则将position_map中的数据设置为None
             self.position_map[marker_id] = None
         else:
             self.position_map[marker_id] = self.temp_map[marker_id][0]
@@ -113,8 +110,12 @@ class PositionMap:
 
 
 class MarkerTracker:
-    def __init__(self, camera_names=["camera1", "camera3"]):
-        with open('marker_info.json', 'r') as f:
+    def __init__(self, camera_names=["camera1", "camera3"],marker_json_path="marker_info.json"):
+        '''
+        camera1: eye-in-hand camera
+        camera3: fixed camera        
+        '''
+        with open(marker_json_path, 'r') as f:
             self.marker_info = json.load(f)
         self.env = RealEnv(robot_names=['robot1'], camera_names=camera_names)
         
@@ -162,7 +163,7 @@ class MarkerTracker:
                         id=marker_id, 
                         aruco_dict=set_aruco_dict(self.marker_info[marker_id]["aruco_dict"])
                     )
-
+                    # convert to robot base frame
                     if cam_name == "camera3" and marker_pose is not None: #
                         marker_pose = self.res_se3 * marker_pose
 
@@ -227,7 +228,12 @@ class MarkerTracker:
         with self.lock:
             return self.position_map.overall_map.copy()
 
-
+transformations = SE3([
+        [0.03391, -0.01653, 0.9993, 0.03622],
+        [0.9994, -0.0091, -0.03407, -0.02485],
+        [0.009689, 0.9998, 0.01621, -0.1034],
+        [0, 0, 0, 1]
+    ])  # Eye-hand calibration matrix
 
 def auto_regist_camera(marker_id_input):
     '''
@@ -237,15 +243,9 @@ def auto_regist_camera(marker_id_input):
         marker_id_input: ID of ArUco marker visible to both cameras
     
     Returns:
-        SE3: Transformation from robot base to camera3
+        SE3: Transformation from robot base to camera3(fixed)
     '''
     marker_id_input = str(marker_id_input)
-    transformations = SE3([
-        [0.03391, -0.01653, 0.9993, 0.03622],
-        [0.9994, -0.0091, -0.03407, -0.02485],
-        [0.009689, 0.9998, 0.01621, -0.1034],
-        [0, 0, 0, 1]
-    ])  # Eye-hand calibration matrix
 
     def setup_camera_env(camera_name):
         """Create environment and position map for a single camera."""

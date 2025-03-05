@@ -8,14 +8,14 @@ import os
 import argparse
 
 
-from maker_tracker import same_position
+from marker_tracker import same_position
 from aruco_data.id_info import IDInfoList, IDInfo
-from maker_tracker import MarkerTracker
+from marker_tracker import MarkerTracker
 from my_utils.aruco_util import get_marker_pose,set_aruco_dict
 from my_utils.robot_utils import robot_move,robot_fk,robot_ee2marker
 from my_utils.myRobotSaver import MyRobotSaver,read_movement,replay_movement
 from follow_aruco import *
-from maker_tracker import *
+from marker_tracker import *
 
 
 

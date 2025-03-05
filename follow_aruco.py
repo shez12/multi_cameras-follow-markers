@@ -7,9 +7,9 @@ import sys
 import os
 
 
-from maker_tracker import same_position
+from marker_tracker import same_position
 from aruco_data.id_info import IDInfoList, IDInfo
-from maker_tracker import MarkerTracker
+from marker_tracker import MarkerTracker
 from my_utils.robot_utils import robot_move,robot_fk,robot_ee2marker
 from my_utils.myRobotSaver import MyRobotSaver,read_movement,replay_movement
 
@@ -217,7 +217,7 @@ if __name__ == "__main__":
         # rospy.init_node('dino_bot')
         gripper = ros_utils.myGripper.MyGripper()
         robot = init_robot("robot1")
-        tracker = MarkerTracker(camera_names=["camera1","camera3"])
+        tracker = MarkerTracker()
         tracker.start_tracking(show_images=True)
         time.sleep(3)
         Action = MarkerAction(robot, gripper,tracker)
